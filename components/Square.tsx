@@ -1,59 +1,81 @@
 import { Button } from "@/components/ui/button";
+import { PlayerMark } from "@/components/marks";
 import { cn } from "@/lib/utils";
-import { PLAYERS, BOARD_SIZE, type Cell } from "@/lib/game";
+import { PLAYERS, BOARD_SIZE, type Cell, type Mark } from "@/lib/game";
 
 interface SquareProps {
   index: number;
   value: Cell;
+  next: Mark;
   isWinning: boolean;
+  /** A win happened and this square is not part of it: step back visually. */
+  dimmed: boolean;
   gameOver: boolean;
   onPlay: (index: number) => void;
 }
 
-export function Square({ index, value, isWinning, gameOver, onPlay }: SquareProps) {
+export function Square({ index, value, next, isWinning, dimmed, gameOver, onPlay }: SquareProps) {
   const row = Math.floor(index / BOARD_SIZE) + 1;
   const col = (index % BOARD_SIZE) + 1;
-  const player = value ? PLAYERS[value] : null;
   const playable = value === null && !gameOver;
 
-  const label = `Row ${row}, column ${col}, ${player ? player.name : "empty"}${
+  const label = `Row ${row}, column ${col}, ${value ? PLAYERS[value].name : "empty"}${
     isWinning ? ", winning square" : ""
   }`;
 
   return (
     <Button
-      variant="outline"
+      variant="ghost"
       aria-label={label}
-      // Stays in the tab order when unplayable, announced via aria-disabled.
+      // Stays in the tab order when unplayable; announced via aria-disabled.
       disabled={!playable}
       focusableWhenDisabled
       onClick={() => {
         if (playable) onPlay(index);
       }}
       className={cn(
-        "relative aspect-square h-auto w-full rounded-2xl p-0",
-        "border-border bg-secondary/60 dark:bg-secondary/60 text-4xl sm:text-5xl",
-        "transition-[background-color,box-shadow,transform] duration-200",
-        "focus-visible:ring-4 focus-visible:ring-ring/60",
-        // Base UI marks unplayable squares with data-disabled; keep them fully visible.
+        "group/sq relative aspect-square size-auto w-full rounded-[14px] p-0",
+        "border border-border bg-secondary/70 dark:bg-secondary/70",
+        "transition-[background-color,border-color,opacity] duration-200",
+        "focus-visible:border-ring focus-visible:ring-4 focus-visible:ring-ring/35",
+        // Base UI marks unplayable squares as disabled; keep them fully legible.
         "disabled:opacity-100 data-disabled:opacity-100 aria-disabled:opacity-100",
-        playable && "cursor-pointer hover:bg-accent dark:hover:bg-accent hover:-translate-y-0.5",
-        !playable && "cursor-not-allowed",
-        isWinning && "animate-win-pulse",
-        isWinning && value === "P1" && "bg-bolt/15 dark:bg-bolt/15 [--win-color:var(--bolt)]",
-        isWinning && value === "P2" && "bg-gear/15 dark:bg-gear/15 [--win-color:var(--gear)]",
+        playable && "cursor-pointer hover:border-[#35528a] hover:bg-accent dark:hover:bg-accent",
+        !playable && "cursor-default",
+        isWinning && value === "P1" && "border-bolt/70 bg-bolt/10 dark:bg-bolt/10",
+        isWinning && value === "P2" && "border-gear/70 bg-gear/10 dark:bg-gear/10",
+        dimmed && "opacity-50 data-disabled:opacity-50 aria-disabled:opacity-50",
       )}
     >
-      {player && (
-        <span
-          aria-hidden="true"
+      {value ? (
+        <PlayerMark
+          mark={value}
           className={cn(
-            "motion-safe:animate-in motion-safe:zoom-in-50 motion-safe:fade-in motion-safe:duration-300",
-            value === "P1" ? "glow-bolt" : "glow-gear",
+            // z-20 lifts the piece above the win trace (z-10), so the trace runs beneath it.
+            "relative z-20 size-[46%]",
+            value === "P1" ? "anim-bolt" : "anim-gear",
+            isWinning && value === "P1" && "drop-shadow-[0_0_10px_rgb(63_224_245/0.75)]",
+            isWinning && value === "P2" && "drop-shadow-[0_0_10px_rgb(247_178_59/0.75)]",
           )}
-        >
-          {player.icon}
-        </span>
+        />
+      ) : (
+        <>
+          {/* Solder pad: shows the square is an open position. */}
+          <span
+            aria-hidden="true"
+            className={cn(
+              "size-[14%] rounded-full border-2 border-pad transition-opacity duration-150",
+              playable && "group-hover/sq:opacity-0 group-focus-visible/sq:opacity-0",
+            )}
+          />
+          {/* Preview of the piece that would land here. */}
+          {playable && (
+            <PlayerMark
+              mark={next}
+              className="absolute size-[46%] opacity-0 transition-opacity duration-150 group-hover/sq:opacity-25 group-focus-visible/sq:opacity-25"
+            />
+          )}
+        </>
       )}
     </Button>
   );

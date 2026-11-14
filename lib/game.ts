@@ -8,11 +8,12 @@ export type WinLine = readonly [number, number, number];
 export interface PlayerInfo {
   name: string;
   icon: string;
+  label: string;
 }
 
 export const PLAYERS: Record<Mark, PlayerInfo> = {
-  P1: { name: "Bolt", icon: "⚡" },
-  P2: { name: "Gear", icon: "⚙️" },
+  P1: { name: "Bolt", icon: "⚡", label: "Player 1" },
+  P2: { name: "Gear", icon: "⚙️", label: "Player 2" },
 };
 
 export const BOARD_SIZE = 3;

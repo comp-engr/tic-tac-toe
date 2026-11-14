@@ -1,3 +1,4 @@
+import { PlayerMark } from "@/components/marks";
 import { cn } from "@/lib/utils";
 import { PLAYERS, type Mark } from "@/lib/game";
 
@@ -8,38 +9,40 @@ interface StatusBannerProps {
 }
 
 export function StatusBanner({ winner, draw, next }: StatusBannerProps) {
-  let message: string;
-  let tone: Mark | "draw";
-
-  if (winner) {
-    message = `Winner: ${PLAYERS[winner].name} ${PLAYERS[winner].icon}`;
-    tone = winner;
-  } else if (draw) {
-    message = "It's a draw!";
-    tone = "draw";
-  } else {
-    message = `Next player: ${PLAYERS[next].name} ${PLAYERS[next].icon}`;
-    tone = next;
-  }
+  const subject = winner ?? (draw ? null : next);
+  const prefix = winner ? "Winner:" : "Next player:";
 
   return (
-    <p
+    <div
       role="status"
       aria-live="polite"
-      // Remount when the game ends so the entrance animation plays.
+      // Remount when the game ends so the entrance animation plays once.
       key={winner ? "win" : draw ? "draw" : "play"}
       className={cn(
-        "rounded-xl border px-4 py-3 text-center font-heading text-lg font-semibold tracking-tight sm:text-xl",
-        tone === "P1" && "border-bolt/40 bg-bolt/10 text-bolt",
-        tone === "P2" && "border-gear/40 bg-gear/10 text-gear",
-        tone === "draw" && "border-border bg-muted text-foreground",
-        (winner || draw) &&
-          "motion-safe:animate-in motion-safe:zoom-in-90 motion-safe:fade-in motion-safe:duration-500",
-        winner === "P1" && "glow-bolt shadow-[0_0_24px_-4px_var(--bolt)]",
-        winner === "P2" && "glow-gear shadow-[0_0_24px_-4px_var(--gear)]",
+        "flex min-h-14 items-center gap-3 rounded-xl border px-4 py-3",
+        "font-heading text-lg font-semibold sm:text-xl",
+        (winner || draw) && "anim-banner",
+        !winner && !draw && "border-border bg-card",
+        winner === "P1" && "border-bolt/50 bg-bolt/10 text-bolt",
+        winner === "P2" && "border-gear/50 bg-gear/10 text-gear",
+        draw && "border-border bg-muted",
       )}
     >
-      {message}
-    </p>
+      {subject ? (
+        <>
+          <PlayerMark mark={subject} className="size-6 shrink-0" />
+          <p>
+            <span className={cn(!winner && "text-muted-foreground")}>{prefix}</span>{" "}
+            <span className={cn(!winner && (subject === "P1" ? "text-bolt" : "text-gear"))}>
+              {PLAYERS[subject].name}
+            </span>
+            {/* The icon is drawn as SVG; this keeps the exact status text for screen readers. */}
+            <span className="sr-only"> {PLAYERS[subject].icon}</span>
+          </p>
+        </>
+      ) : (
+        <p>It&apos;s a draw!</p>
+      )}
+    </div>
   );
 }

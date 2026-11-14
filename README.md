@@ -1,36 +1,71 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Engr. Marco's Tic-Tac-Toe
 
-## Getting Started
+Two players, one board. Good luck!
 
-First, run the development server:
+A two-player tic-tac-toe game styled like a circuit board: **Bolt ⚡** (cyan) versus **Gear ⚙️** (amber). When someone wins, a glowing trace connects their three squares.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+**Play it:** https://tic-tac-toe-sigma-six-42.vercel.app
+
+![Preview of the game: Bolt wins down the diagonal](https://tic-tac-toe-sigma-six-42.vercel.app/opengraph-image)
+
+## Features
+
+- Two players take turns on a 3×3 board. Bolt always moves first.
+- All 8 winning lines are checked after every move, and the winning squares are highlighted.
+- A filled square can't be changed, and no moves are accepted after the game ends.
+- Live status: whose move it is, the winner, or a draw.
+- A scoreboard for Bolt wins, Gear wins and draws. Each finished game counts exactly once.
+- **New Game** keeps the scores. **Reset All** clears everything after one confirmation.
+- Responsive from phone to desktop. On wide screens the board and scoreboard sit side by side.
+- Accessible: every square is a real button with a label such as "Row 1, column 2, empty". The board is fully playable with Tab and Enter, status changes are announced to screen readers, and animations respect `prefers-reduced-motion`.
+
+## Tech stack
+
+- [Next.js 15](https://nextjs.org) (App Router) and React 19 with TypeScript
+- Tailwind CSS 4
+- [shadcn/ui](https://ui.shadcn.com): Button, Card, Badge
+- Vitest and Testing Library for tests
+- Deployed on Vercel
+
+## Project structure
+
+```
+app/
+  page.tsx               Client component: holds game state with useState
+  layout.tsx             Fonts, metadata, social preview tags
+  icon.svg               Favicon
+  opengraph-image.tsx    Social preview image, generated at build time
+components/
+  Board.tsx              3×3 grid, edge coordinates, and the winning trace
+  Square.tsx             One square: an accessible button
+  StatusBanner.tsx       Next player / winner / draw
+  ScoreBoard.tsx         Player cards with scores and turn indicator
+  marks.tsx              SVG Bolt and Gear pieces
+  ui/                    shadcn/ui components
+lib/
+  game.ts                Pure game logic: calculateWinner, isDraw, nextPlayer
+tests/
+  game.test.ts           Unit tests for the game logic
+  page.test.tsx          Full gameplay tests against the rendered page
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Game logic is kept separate from the UI. `lib/game.ts` has no React or DOM code, so it's easy to test and reuse. The page stores only the board and the scores; whose turn it is, the winner and draws are calculated from the board on every render, so they can't fall out of sync.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Running locally
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Requires Node.js 20 or later.
 
-## Learn More
+```bash
+npm install
+npm run dev        # http://localhost:3000
+```
 
-To learn more about Next.js, take a look at the following resources:
+| Command             | What it does                    |
+| ------------------- | ------------------------------- |
+| `npm run dev`       | Start the dev server            |
+| `npm test`          | Run all tests once              |
+| `npm run lint`      | Check the code with ESLint      |
+| `npm run typecheck` | Check types with TypeScript     |
+| `npm run build`     | Build for production            |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Every push and pull request runs lint, type checks, tests and a production build on GitHub Actions.

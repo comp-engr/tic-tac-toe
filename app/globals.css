@@ -8,11 +8,13 @@
   --color-bolt: var(--bolt);
   --color-gear: var(--gear);
   --color-trace: var(--trace);
+  --color-panel: var(--panel);
+  --color-pad: var(--pad);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-geist-mono);
+  --font-sans: var(--font-plex);
+  --font-mono: var(--font-chakra);
+  --font-heading: var(--font-chakra);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -55,30 +57,31 @@
 :root,
 .dark {
   color-scheme: dark;
-  --background: oklch(0.17 0.04 258);
-  --foreground: oklch(0.95 0.01 240);
-  --card: oklch(0.21 0.045 258 / 85%);
-  --card-foreground: oklch(0.95 0.01 240);
-  --popover: oklch(0.21 0.045 258);
-  --popover-foreground: oklch(0.95 0.01 240);
-  --primary: oklch(0.82 0.14 205);
-  --primary-foreground: oklch(0.17 0.04 258);
-  --secondary: oklch(0.27 0.05 258);
-  --secondary-foreground: oklch(0.95 0.01 240);
-  --muted: oklch(0.27 0.05 258);
-  --muted-foreground: oklch(0.74 0.03 245);
-  --accent: oklch(0.3 0.06 258);
-  --accent-foreground: oklch(0.95 0.01 240);
-  --destructive: oklch(0.7 0.19 22);
-  --border: oklch(0.82 0.14 205 / 18%);
-  --input: oklch(0.82 0.14 205 / 22%);
-  --ring: oklch(0.82 0.14 205);
-  --radius: 0.875rem;
+  --background: #0a1428;
+  --foreground: #e6eef8;
+  --card: #111d38;
+  --card-foreground: #e6eef8;
+  --popover: #111d38;
+  --popover-foreground: #e6eef8;
+  --primary: #3fe0f5;
+  --primary-foreground: #06202a;
+  --secondary: #16264a;
+  --secondary-foreground: #e6eef8;
+  --muted: #16264a;
+  --muted-foreground: #8fa3c2;
+  --accent: #1b2d56;
+  --accent-foreground: #e6eef8;
+  --destructive: #ff6b6b;
+  --border: #22365f;
+  --input: #22365f;
+  --ring: #3fe0f5;
+  --radius: 0.75rem;
 
-  /* Player accents */
-  --bolt: oklch(0.84 0.14 205);  /* cyan */
-  --gear: oklch(0.83 0.15 78);   /* amber */
-  --trace: oklch(0.82 0.14 205 / 9%);
+  --panel: #0d1830;   /* the board's circuit-board substrate */
+  --pad: #2b4373;     /* solder-pad rings on empty squares */
+  --bolt: #3fe0f5;    /* cyan */
+  --gear: #f7b23b;    /* amber */
+  --trace: rgb(63 224 245 / 0.055);
 }
 
 @layer base {
@@ -91,40 +94,38 @@
   body {
     @apply bg-background text-foreground;
     min-height: 100dvh;
-    /* Circuit-board feel: a faint grid with solder pads, plus soft cyan/amber glows. */
+    /* A quiet circuit grid; one soft light source top-left. */
     background-image:
-      radial-gradient(circle at 15% 10%, oklch(0.84 0.14 205 / 12%), transparent 40%),
-      radial-gradient(circle at 85% 90%, oklch(0.83 0.15 78 / 10%), transparent 40%),
-      radial-gradient(circle, var(--trace) 1.5px, transparent 2px),
+      radial-gradient(ellipse 60% 50% at 10% 0%, rgb(63 224 245 / 0.07), transparent 70%),
       linear-gradient(var(--trace) 1px, transparent 1px),
       linear-gradient(90deg, var(--trace) 1px, transparent 1px);
-    background-size: 100% 100%, 100% 100%, 48px 48px, 48px 48px, 48px 48px;
-    background-position: 0 0, 0 0, 24px 24px, 0 0, 0 0;
+    background-size: 100% 100%, 40px 40px, 40px 40px;
     background-attachment: fixed;
   }
 }
 
-@layer utilities {
-  .glow-bolt {
-    text-shadow: 0 0 12px oklch(0.84 0.14 205 / 70%);
-  }
-  .glow-gear {
-    text-shadow: 0 0 12px oklch(0.83 0.15 78 / 70%);
-  }
+/* ---------- Motion: every animation answers a move or a win ---------- */
+@keyframes bolt-strike {
+  0% { transform: translateY(-35%) scale(0.6); opacity: 0; }
+  55% { transform: translateY(4%) scale(1.08); opacity: 1; }
+  100% { transform: none; opacity: 1; }
+}
+@keyframes gear-spin-in {
+  0% { transform: rotate(-150deg) scale(0.5); opacity: 0; }
+  100% { transform: rotate(0) scale(1); opacity: 1; }
+}
+@keyframes trace-draw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes banner-in {
+  from { transform: translateY(6px); opacity: 0; }
+  to { transform: none; opacity: 1; }
 }
 
-/* Winning squares pulse with their player's color. */
-@keyframes win-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 var(--win-color), inset 0 0 0 2px var(--win-color); }
-  50% { box-shadow: 0 0 28px 4px var(--win-color), inset 0 0 0 2px var(--win-color); }
-}
-.animate-win-pulse {
-  animation: win-pulse 1.4s ease-in-out infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .animate-win-pulse {
-    animation: none;
-    box-shadow: 0 0 18px 2px var(--win-color), inset 0 0 0 2px var(--win-color);
-  }
+@media (prefers-reduced-motion: no-preference) {
+  .anim-bolt { animation: bolt-strike 320ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both; }
+  .anim-gear { animation: gear-spin-in 420ms cubic-bezier(0.2, 0.8, 0.3, 1) both; }
+  .anim-trace { animation: trace-draw 520ms 120ms cubic-bezier(0.6, 0, 0.3, 1) both; }
+  .anim-banner { animation: banner-in 260ms ease-out both; }
 }
